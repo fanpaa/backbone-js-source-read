@@ -35,6 +35,7 @@
 
     // Save the previous value of the `Backbone` variable, so that it can be
     // restored later on, if `noConflict` is used.
+    //保存全局环境中存在的Backbone变量给previousBackbone
     var previousBackbone = root.Backbone;
 
     // Create local references to array methods we'll want to use later.
@@ -52,6 +53,7 @@
 
     // Runs Backbone.js in *noConflict* mode, returning the `Backbone` variable
     // to its previous owner. Returns a reference to this Backbone object.
+    //执行noConflict后全局 Backbone=previousBackbone  返回一个当前Backbone的引用。例如 var newBB=Backbone.noConflict()
     Backbone.noConflict = function() {
         root.Backbone = previousBackbone;
         return this;
@@ -60,12 +62,14 @@
     // Turn on `emulateHTTP` to support legacy HTTP servers. Setting this option
     // will fake `"PATCH"`, `"PUT"` and `"DELETE"` requests via the `_method` parameter and
     // set a `X-Http-Method-Override` header.
+    //兼容旧http server
     Backbone.emulateHTTP = false;
 
     // Turn on `emulateJSON` to support legacy servers that can't deal with direct
     // `application/json` requests ... will encode the body as
     // `application/x-www-form-urlencoded` instead and will send the model in a
     // form param named `model`.
+    //同上
     Backbone.emulateJSON = false;
 
     // Backbone.Events
@@ -86,9 +90,14 @@
         // Bind an event to a `callback` function. Passing `"all"` will bind
         // the callback to all events fired.
         on: function(name, callback, context) {
+            //第一种条件是2种形式的event集合，若满足返回false（通过eventsApi添加事件）
+            //第二种条件没有callback
             if (!eventsApi(this, 'on', name, [callback, context]) || !callback) return this;
+            //定义变量，若没有定义则新建[]，有则push新callback
             this._events || (this._events = {});
             var events = this._events[name] || (this._events[name] = []);
+            //关于context与ctx
+            //感谢 http://undefinedblog.com/backbone-source-code/
             events.push({callback: callback, context: context, ctx: context || this});
             return this;
         },
@@ -103,6 +112,7 @@
                 callback.apply(this, arguments);
             });
             once._callback = callback;
+            //调用 on
             return this.on(name, once, context);
         },
 
@@ -112,11 +122,16 @@
         // callbacks for all events.
         off: function(name, callback, context) {
             var retain, ev, events, names, i, l, j, k;
+            //this._events是内部变量，记录event
+            //1.如果没有_events
+            //2.调用eventsApi
             if (!this._events || !eventsApi(this, 'off', name, [callback, context])) return this;
+            //都为空
             if (!name && !callback && !context) {
                 this._events = void 0;
                 return this;
             }
+            //off指定name或者all
             names = name ? [name] : _.keys(this._events);
             for (i = 0, l = names.length; i < l; i++) {
                 name = names[i];
@@ -177,18 +192,25 @@
     // Implement fancy features of the Events API such as multiple event
     // names `"change blur"` and jQuery-style event maps `{change: action}`
     // in terms of the existing API.
+    //分解events
+    //例如：eventsApi(this, 'on', name, [callback, context])
     var eventsApi = function(obj, action, name, rest) {
         if (!name) return true;
 
         // Handle event maps.
+        //jquery event 映射
+        //例如：(obj, 'on', {'click': function () {}, 'change': function () {}}, context)
         if (typeof name === 'object') {
             for (var key in name) {
+                //反复调用on,off,once
+                //例如 obj.on(obj,['click',function(){},[callback, context]])
                 obj[action].apply(obj, [key, name[key]].concat(rest));
             }
             return false;
         }
 
         // Handle space separated event names.
+        //空格分隔事件
         if (eventSplitter.test(name)) {
             var names = name.split(eventSplitter);
             for (var i = 0, l = names.length; i < l; i++) {
