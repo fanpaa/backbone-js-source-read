@@ -8,6 +8,7 @@
 (function(root, factory) {
 
     // Set up Backbone appropriately for the environment. Start with AMD.
+    //模块化，如果AMD方式
     if (typeof define === 'function' && define.amd) {
         define(['underscore', 'jquery', 'exports'], function(_, $, exports) {
             // Export global even in AMD case in case this script is loaded with
@@ -16,11 +17,13 @@
         });
 
         // Next for Node.js or CommonJS. jQuery may not be needed as a module.
+        //模块化，如果CMD方式
     } else if (typeof exports !== 'undefined') {
         var _ = require('underscore');
         factory(root, exports, _);
 
         // Finally, as a browser global.
+        //全局方式
     } else {
         root.Backbone = factory(root, {}, root._, (root.jQuery || root.Zepto || root.ender || root.$));
     }
