@@ -378,6 +378,7 @@
             }
 
             // Trigger all relevant attribute changes.
+            //触发change:attr事件
             if (!silent) {
                 if (changes.length) this._pending = options;
                 for (var i = 0, l = changes.length; i < l; i++) {
@@ -387,6 +388,7 @@
 
             // You might be wondering why there's a `while` loop here. Changes can
             // be recursively nested within `"change"` events.
+            //触发change事件
             if (changing) return this;
             if (!silent) {
                 while (this._pending) {
