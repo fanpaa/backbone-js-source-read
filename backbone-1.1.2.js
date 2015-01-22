@@ -136,12 +136,14 @@
             for (i = 0, l = names.length; i < l; i++) {
                 name = names[i];
                 if (events = this._events[name]) {
+                    //清空_events
                     this._events[name] = retain = [];
                     if (callback || context) {
                         for (j = 0, k = events.length; j < k; j++) {
                             ev = events[j];
                             if ((callback && callback !== ev.callback && callback !== ev.callback._callback) ||
                                 (context && context !== ev.context)) {
+                                //push _events
                                 retain.push(ev);
                             }
                         }
